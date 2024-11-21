@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Risco de Doenças</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .question label {
+            font-weight: bold;
+        }
+
+        .answers label {
+            display: block;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        #result p {
+            margin: 5px 0;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Avaliação de Risco de Doenças</h1>
+        <form id="questionnaire">
+            <!-- Perguntas serão geradas dinamicamente aqui -->
+        </form>
+        <button id="submit">Enviar Respostas</button>
+        <div id="result"></div>
+    </div>
+    <script>
+        const questions = [
+            { text: "Com que frequência você se sente exausto ao final do dia de trabalho?", disease: "Burnout" },
+            { text: "Você se sente cínico ou negativo em relação ao seu trabalho?", disease: "Burnout" },
+            { text: "Com que frequência você sente que seu trabalho não faz diferença?", disease: "Burnout" },
+            { text: "Você tem dificuldade em se concentrar em tarefas?", disease: "Burnout" },
+            { text: "Com que frequência você se sente sobrecarregado pelas suas responsabilidades?", disease: "Burnout" },
+            { text: "Você costuma sentir dores ou desconfortos físicos sem uma resposta médica clara, como dores de cabeça, estômago ou tensão nos músculos?", disease: "Somatização" },
+            { text: "Tem a sensação de que os médicos e outras pessoas ao seu redor não enxergam a gravidade dos sintomas que você sente?", disease: "Somatização" },
+            { text: "Você sente que seus sintomas físicos atrapalham no seu cotidiano (trabalho, estudos ou relacionamentos), mesmo que não haja uma explicação médica para eles?", disease: "Somatização" },
+            { text: "Quando está ansioso(a) ou passando por situações emocionais intensas, seus sintomas físicos parecem se intensificar?", disease: "Somatização" },
+            { text: "Você sente que seus sintomas são difíceis de descrever, mas que causam muito desconforto e afetam sua qualidade de vida?", disease: "Somatização" },
+            { text: "Não consigo vivenciar nenhum sentimento positivo. Acontece com que frequência?", disease: "Depressão" },
+            { text: "Acho difícil ter iniciativa para fazer as coisas. Acontece com que frequência?", disease: "Depressão" },
+            { text: "Me sinto sem ânimo. Acontece com que frequência?", disease: "Depressão" },
+            { text: "Sinto que não tenho valor como pessoa. Com que frequência acontece?", disease: "Depressão" },
+            { text: "Sinto que a vida não tem sentido.", disease: "Depressão" },
+            { text: "Com que frequência a cultura organizacional da sua empresa oferece um ambiente sem pressão?", disease: "Stress Ocupacional" },
+            { text: "Com que frequência você possui um aumento na frequência cardíaca, na tensão muscular ou alterações no apetite?", disease: "Stress Ocupacional" },
+            { text: "Com que frequência o ambiente de trabalho da sua empresa oferece sobrecarga de trabalho e altos níveis de competitividade?", disease: "Stress Ocupacional" },
+            { text: "O cronograma de trabalho oferece condições favoráveis para um bom descanso do seu corpo, ou seja, você costuma ter insônia causada pelo ambiente de trabalho?", disease: "Stress Ocupacional" },
+            { text: "Após um momento estressante no trabalho, com que frequência você notou a presença de lesões vermelhas, ásperas e que coçam?", disease: "Stress Ocupacional" },
+            { text: "Costuma ter fortes emoções constantes?", disease: "Ansiedade" },
+            { text: "Costuma ter crises de calafrios ou ondas de calor?", disease: "Ansiedade" },
+            { text: "Tem a constante sensação de medo mesmo que não haja razão para isso?", disease: "Ansiedade" },
+            { text: "Costuma ter crises com suor frio, boca seca, aumento nos batimentos cardíacos e tontura?", disease: "Ansiedade" },
+            { text: "Costuma ter pensamentos sem motivos de que vai morrer a qualquer momento?", disease: "Síndrome do Pânico" },
+            { text: "Costuma sentir como se você estivesse “fora do seu corpo”?", disease: "Síndrome do Pânico" },
+            { text: "Você se sente ansioso com qual frequência por semana?", disease: "Síndrome do Pânico" },
+            { text: "Com que frequência, tem uma preocupação constante dos prazos para entrega de trabalhos/serviços?", disease: "Síndrome do Pânico" },
+            { text: "Com que frequência você tem pensamentos acelerados?", disease: "Síndrome do Pânico" },
+            { text: "Em meio ao tédio, há uma tendência frequente de roer unhas, mordiscar a boca, arrancar pele dos dedos?", disease: "Síndrome do Pânico" }
+        ];
+
+        const levels = {
+            "Baixo risco": { min: 0, max: 1 },
+            "Risco Moderado": { min: 2, max: 3 },
+            "Risco Alto": { min: 4 }
+        };
+
+        const form = document.getElementById("questionnaire");
+        const submitButton = document.getElementById("submit");
+        const resultDiv = document.getElementById("result");
+
+        // Gerar as perguntas no formulário
+        questions.forEach((q, index) => {
+            const questionDiv = document.createElement("div");
+            questionDiv.className = "question";
+
+            const questionLabel = document.createElement("label");
+            questionLabel.textContent = `${index + 1}. ${q.text}`;
+            questionDiv.appendChild(questionLabel);
+
+            const answersDiv = document.createElement("div");
+            answersDiv.className = "answers";
+
+            ["Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre"].forEach((answer, idx) => {
+                const answerLabel = document.createElement("label");
+                const input = document.createElement("input");
+                input.type = "radio";
+                input.name = `question-${index}`;
+                input.value = idx >= 3 ? "Frequentemente" : "Nunca"; // "Frequentemente" e "Sempre" contam
+                answerLabel.appendChild(input);
+                answerLabel.appendChild(document.createTextNode(answer));
+                answersDiv.appendChild(answerLabel);
+            });
+
+            questionDiv.appendChild(answersDiv);
+            form.appendChild(questionDiv);
+        });
+
+        // Calcular resultados
+        submitButton.addEventListener("click", () => {
+            const scores = {};
+            let allAnswered = true;
+
+            questions.forEach((q, index) => {
+                const checked = document.querySelector(`input[name="question-${index}"]:checked`);
+                if (!checked) {
+                    allAnswered = false;
+                } else if (checked.value === "Frequentemente") {
+                    scores[q.disease] = (scores[q.disease] || 0) + 1;
+                }
+            });
+
+            if (!allAnswered) {
+                resultDiv.innerHTML = '<p class="error">Por favor, responda todas as perguntas antes de enviar.</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = "";
+            for (const disease in scores) {
+                const score = scores[disease];
+                let level;
+                if (score >= levels["Risco Alto"].min) {
+                    level = "Risco Alto";
+                } else if (score >= levels["Risco Moderado"].min && score <= levels["Risco Moderado"].max) {
+                    level = "Risco Moderado";
+                } else {
+                    level = "Baixo risco";
+                }
+                resultDiv.innerHTML += `<p>${disease}: ${level}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
